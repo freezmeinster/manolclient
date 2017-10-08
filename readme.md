@@ -1,6 +1,6 @@
-Manol Client using Go lang
+# Manol Client using Go lang
 
-##Usage
+## Usage
 `manolclient -server=<server_url> -payload=<payload_path> -key=<deploy_key>`
 
 ## Example
