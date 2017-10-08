@@ -11,42 +11,45 @@ import (
 
 func main() {
     
-    BASE_URL := flag.String("server", "manol.o-leafs.com", "Manol Server URL")
+    BASE_URL := flag.String("server", "", "Manol Server URL")
     KEY := flag.String("key", "", "A Deploy Key")
-    PAYLOAD := flag.String("payload", "/tmp/payload.sh", "Deploy Script")
+    PAYLOAD := flag.String("payload", "", "Deploy Script")
     
     flag.Parse()
     
-	URL := fmt.Sprintf("ws://%s/%s/", *BASE_URL, *KEY)
+    if *BASE_URL != "" && *KEY != "" && *PAYLOAD != "" {
+        URL := fmt.Sprintf("ws://%s/%s/", *BASE_URL, *KEY)
 
-	var dialer *websocket.Dialer
-    
-    for {
-        conn, _, err := dialer.Dial(URL, nil)
-        if err != nil {
-            fmt.Println(err)
-            time.Sleep(time.Second * 2)
-        } else {
-            fmt.Println("connected to manol server")
-            for {
-                _, message, err := conn.ReadMessage()
-                if err != nil {
-                    fmt.Println("read:", err)
-                    break
-                }
+        var dialer *websocket.Dialer
         
-                if fmt.Sprintf("%s", message) == "deploy" {
-                    go ExecutePayload(*PAYLOAD)
-                } else {
-                    fmt.Println("unknown command")
+        for {
+            conn, _, err := dialer.Dial(URL, nil)
+            if err != nil {
+                fmt.Println(err)
+                time.Sleep(time.Second * 2)
+            } else {
+                fmt.Println("connected to manol server")
+                for {
+                    _, message, err := conn.ReadMessage()
+                    if err != nil {
+                        fmt.Println("read:", err)
+                        break
+                    }
+            
+                    if fmt.Sprintf("%s", message) == "deploy" {
+                        go ExecutePayload(*PAYLOAD)
+                    } else {
+                        fmt.Println("unknown command")
+                    }
                 }
             }
+        
+            
+            
         }
-    
-        
-        
+    } else {
+        fmt.Println(`Usage: manolclient -server=<server_url> -key=<deploy_key> -payload=<payload_path>`)
     }
-	
 }
 
 func ExecutePayload(payload string){
